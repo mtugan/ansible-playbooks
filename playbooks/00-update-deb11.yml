@@ -1,0 +1,25 @@
+- name: Debian update
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: dist
+    autoremove: true
+    clean: true
+
+#   - name: Check if we can fetch user home dir
+#     ansible.builtin.debug: var=ansible_env.HOME
+#     tags:
+#       - debug
+
+#   - name: Ensure all Debian packages have been updated to the latest version
+#     ansible.builtin.shell: |
+#       apt update
+#       apt dist-upgrade
+#       apt autoremove
+#       apt clean
+#       exit 0
+#     args:
+#       chdir: ""{{ ansible_env.HOME }}""
+#       executable: /bin/bash
+#     tags:
+#       - deprecated
+

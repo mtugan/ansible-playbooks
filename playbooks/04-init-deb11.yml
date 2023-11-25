@@ -1,0 +1,85 @@
+# This playbook configures a new Debian 11 host with my preferred hardened config
+# Extra variables:
+# target_host
+# root_password
+# user_name
+# user_password
+# In vars.yml
+# ssh_pub_path
+
+- name: Initialize a Debian 11 host
+  hosts: "{{ target_host }}"
+  become: false
+  tags: initialization
+  vars:
+    ansible_user: root
+    ansible_password: "{{ root_password }}"
+  vars_files:
+    - "{{ playbook_dir | dirname }}/vars/main.yml"
+  tasks:
+
+  # Packages 
+
+  - name: Update packages
+    ansible.builtin.include_tasks: 00-update-deb11.yml
+
+  - name: Add basic packages
+    ansible.builtin.apt:
+      pkg:
+        - curl
+        - vim
+        - git
+        - sudo
+      state: latest
+      update_cache: true
+
+  # Users
+
+  - name: Create a sudo user
+    ansible.builtin.user:
+      name: "{{ user_name }}"
+      password: "{{ user_password | password_hash('sha512') }}"
+      groups: ["sudo"]
+      append: true
+      create_home: true
+      shell: /bin/bash
+
+  # Firewall
+
+  - name: Set up UFW
+    ansible.builtin.include_tasks: 01-init-ufw-deb11.yml
+    vars:
+      ssh_ufw_deb11_state: enabled
+      ssh_ufw_deb11_deny: deny
+
+  # SSHD hardening
+
+  - name: Set up F2B for SSHD
+    ansible.builtin.include_tasks: 02-sshd-f2b-deb11.yml
+
+  - name: Harden SSH
+    ansible.builtin.include_tasks: 03-harden-ssh-deb11.yml
+
+  - name: Auth key for passwordless SSH
+    ansible.posix.authorized_key:
+      user: "{{ user_name }}"
+      state: present
+      key: "{{ lookup('file', files_path + '/id_rsa.pub') }}"
+    when: not ansible_check_mode
+
+  - name: Disallow SSH password auth
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: "^PasswordAuthentication"
+      line: "PasswordAuthentication no"
+      state: present
+      validate: sshd -t -f %s
+    notify:
+      - Restart SSHD
+
+  handlers:
+  - name: Restart SSHD
+    ansible.builtin.service:
+      name: sshd
+      state: restarted
+    

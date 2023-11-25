@@ -1,0 +1,4 @@
+inventory/*
+files/*
+
+!files/sshd-f2b-deb11-default.conf

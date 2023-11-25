@@ -1,0 +1,18 @@
+- name: Install F2B
+  ansible.builtin.apt:
+    pkg:
+      - fail2ban
+    state: latest
+    update_cache: true
+
+- name: Copy F2B config
+  copy:
+    src: '{{ files_path }}/sshd-f2b-deb11-default.conf'
+    dest: /etc/fail2ban/jail.d/sshd-f2b-deb11-default.conf
+
+- name: Restart the F2B service
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: fail2ban
+  when: not ansible_check_mode
