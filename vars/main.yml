@@ -1,1 +1,10 @@
-files_path: '{{ playbook_dir | dirname }}/files'
+# Global
+global_files_dir: '{{ playbook_dir | dirname | dirname }}/files'
+
+# Playbook local
+tasks_dir: '{{ playbook_dir }}/tasks'
+files_dir: '{{ playbook_dir }}/files'
+
+# Playbooks
+deb11_dir: '{{ playbook_dir }}/deb11'
+

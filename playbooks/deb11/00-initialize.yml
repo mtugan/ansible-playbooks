@@ -15,13 +15,13 @@
     ansible_user: root
     ansible_password: "{{ root_password }}"
   vars_files:
-    - "{{ playbook_dir | dirname }}/vars/main.yml"
+    - "{{ playbook_dir | dirname | dirname }}/vars/main.yml"
   tasks:
 
-  # Packages 
+  # Packages
 
   - name: Update packages
-    ansible.builtin.include_tasks: 00-update-deb11.yml
+    ansible.builtin.include_tasks: "{{ tasks_dir }}/00-update.yml"
 
   - name: Add basic packages
     ansible.builtin.apt:
@@ -47,7 +47,7 @@
   # Firewall
 
   - name: Set up UFW
-    ansible.builtin.include_tasks: 01-init-ufw-deb11.yml
+    ansible.builtin.include_tasks: "{{ tasks_dir }}/01-init-ufw.yml"
     vars:
       ssh_ufw_deb11_state: enabled
       ssh_ufw_deb11_deny: deny
@@ -55,16 +55,16 @@
   # SSHD hardening
 
   - name: Set up F2B for SSHD
-    ansible.builtin.include_tasks: 02-sshd-f2b-deb11.yml
+    ansible.builtin.include_tasks: "{{ tasks_dir }}/02-sshd-f2b.yml"
 
   - name: Harden SSH
-    ansible.builtin.include_tasks: 03-harden-ssh-deb11.yml
+    ansible.builtin.include_tasks: "{{ tasks_dir }}/03-harden-ssh.yml"
 
   - name: Auth key for passwordless SSH
     ansible.posix.authorized_key:
       user: "{{ user_name }}"
       state: present
-      key: "{{ lookup('file', files_path + '/id_rsa.pub') }}"
+      key: "{{ lookup('file', global_files_dir + '/00-id-rsa.pub') }}"
     when: not ansible_check_mode
 
   - name: Disallow SSH password auth

@@ -1,0 +1,9 @@
+- name: Update Debian 11 hosts
+  hosts: deb11
+  become: true
+  tags: update
+  vars_files:
+    - "{{ playbook_dir | dirname | dirname }}/vars/main.yml"
+  tasks:
+    - name: Update packages
+      ansible.builtin.include_tasks: "{{ tasks_dir }}/00-update.yml"

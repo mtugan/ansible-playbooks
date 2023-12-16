@@ -7,8 +7,8 @@
 
 - name: Copy F2B config
   copy:
-    src: '{{ files_path }}/sshd-f2b-deb11-default.conf'
-    dest: /etc/fail2ban/jail.d/sshd-f2b-deb11-default.conf
+    src: '{{ files_dir }}/sshd-f2b-default.conf'
+    dest: /etc/fail2ban/jail.d/sshd-f2b-default.conf
 
 - name: Restart the F2B service
   ansible.builtin.systemd:
